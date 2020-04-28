@@ -4,24 +4,16 @@
 #include <Windows.h>
 #include <tchar.h>
 
-#define MAXBYTE 256
+const int Byte = 2048;
 
 using namespace std;
 
 
 void ANSIToUnicode(HANDLE ReadF, HANDLE WriteF);
 void UnicodeToANSI(HANDLE ReadF, HANDLE WriteF);
-
-CHAR DataBuferOnMByte[(MAXBYTE) * sizeof(CHAR)] = { 0 };
-WCHAR DataBuferOnWChar[(MAXBYTE) * sizeof(WCHAR)] = { 0 };
-DWORD CountReadCh = 0;
-
-DWORD CountChangedCh = 0;
-DWORD CountWriteCh = 0;
 HANDLE ReadF;
 HANDLE WriteF;
 void GetError();
-void SetAsDefault();
 
 int main(int argc, char* argv[])
 {
@@ -92,64 +84,53 @@ void GetError()
     LocalFree(lpMsg);
 }
 
-void SetAsDefault()
-{
-    for (int i = 0; i < MAXBYTE * sizeof(CHAR); i++)
-    {
-        DataBuferOnMByte[i] = 0;
-    }
-    for (int i = 0; i < MAXBYTE * sizeof(WCHAR); i++)
-    {
-        DataBuferOnWChar[i] = 0;
-    }
-    CountReadCh = 0;
-    CountChangedCh = 0;
-    CountWriteCh = 0;
-}
 
 void ANSIToUnicode(HANDLE ReadF, HANDLE WriteF)
 {
-    SetAsDefault();
-    do {
-        if (!ReadFile(ReadF, DataBuferOnMByte, (MAXBYTE - 1) * sizeof(CHAR), &CountReadCh, NULL))
-        {
-            GetError(); return;
+    BYTE buffer[Byte];
+    DWORD dwBytes;
+
+    while (ReadFile(ReadF, buffer, Byte, (LPDWORD)&dwBytes, NULL))
+    {
+        if (dwBytes == 0)
+            break;
+
+        int uLength = MultiByteToWideChar(CP_UTF8, 0, (LPCCH)buffer, dwBytes, NULL, 0);
+        wchar_t* uStr = (wchar_t*)calloc(uLength, sizeof(wchar_t));
+
+        MultiByteToWideChar(CP_UTF8, 0, (LPCCH)buffer, dwBytes, uStr, uLength);
+
+        if (!WriteFile(WriteF, uStr, uLength * sizeof(wchar_t), (LPDWORD)&dwBytes, NULL)) {
+            printf("Error of encoding");
+            break;
         }
-        CountChangedCh = MultiByteToWideChar(CP_ACP, 0, DataBuferOnMByte, -1, DataBuferOnWChar, CountReadCh * sizeof(WCHAR));
-        if (!WriteFile(WriteF, DataBuferOnWChar, (CountChangedCh - 1) * sizeof(WCHAR), &CountWriteCh, NULL))
-        {
-            GetError(); return;
-        }
-    } while (CountReadCh == MAXBYTE);
-    printf("Completed.\n");
+    }
+    printf("completed");
 }
 
-void UnicodeToANSI(HANDLE InF, HANDLE OutF)//"/u"
+void UnicodeToANSI(HANDLE InF, HANDLE OutF)
 {
-    SetAsDefault();
-    // получение первых 2, которые отвечают это LE или BE
-    if (!ReadFile(InF, DataBuferOnWChar, 2, &CountReadCh, NULL))
+    BYTE buffer[Byte];
+    DWORD dwBytes;
+
+    while (ReadFile(InF, buffer, Byte, (LPDWORD)&dwBytes, NULL))
     {
-        GetError();
+        if (dwBytes == 0)
+            break;
+
+        int uLength = MultiByteToWideChar(CP_UTF8, 0, (LPCCH)buffer, dwBytes, NULL, 0);
+        wchar_t* uStr = new wchar_t[uLength];
+        MultiByteToWideChar(CP_UTF8, 0, (LPCCH)buffer, dwBytes, uStr, uLength);
+
+        int aLength = WideCharToMultiByte(CP_ACP, 0, uStr, uLength, NULL, 0, NULL, NULL);
+        char* aStr = (char*)calloc(aLength, sizeof(char));
+
+        WideCharToMultiByte(CP_ACP, 0, uStr, uLength, aStr, aLength, NULL, NULL);
+
+        if (!WriteFile(OutF, aStr, aLength * sizeof(char), &dwBytes, NULL)) {
+            printf("Error of encoding");
+            break;
+        }
     }
-    // проверка полученых байт, нужная ли это кодировка файла
-    else if (*DataBuferOnWChar == 0xFEFF || *DataBuferOnWChar == 0xFFFE)
-    {
-        do {
-            if (!ReadFile(InF, DataBuferOnWChar, (MAXBYTE - 1) * sizeof(WCHAR), &CountReadCh, NULL))
-            {
-                GetError(); return;
-            }
-            CountChangedCh = WideCharToMultiByte(CP_MACCP, 0, DataBuferOnWChar, -1, DataBuferOnMByte, CountReadCh, NULL, NULL);
-            if (!WriteFile(OutF, DataBuferOnMByte, CountChangedCh - 1, &CountWriteCh, NULL))
-            {
-                GetError(); return;
-            }
-        } while (CountReadCh == MAXBYTE);
-        printf("Completed.\n");
-    }
-    else
-    {
-        printf("Error:\nIt`s not Unicode Text!\n");
-    }
+    printf("completed");
 }
