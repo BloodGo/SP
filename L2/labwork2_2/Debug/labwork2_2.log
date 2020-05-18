@@ -1,0 +1,7 @@
+﻿  labwork2_2.cpp
+C:\Users\vstas\source\repos\L2\labwork2_2\labwork2_2.cpp(61,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vstas\source\repos\L2\labwork2_2\labwork2_2.cpp(107,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vstas\source\repos\L2\labwork2_2\labwork2_2.cpp(153,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vstas\source\repos\L2\labwork2_2\labwork2_2.cpp(171,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\vstas\source\repos\L2\labwork2_2\labwork2_2.cpp(182,20): warning C4018: '<': signed/unsigned mismatch
+  labwork2_2.vcxproj -> C:\Users\vstas\source\repos\L2\Debug\labwork2_2.exe
