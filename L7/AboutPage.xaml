@@ -1,0 +1,20 @@
+﻿<Page
+    x:Class="SP_Lab7_UWP.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SP_Lab7_UWP"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Image x:Name="image" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="Assets/Эмблема_ХАИ.png"/>
+        <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="Выполнил студент: Русин Данил Группа: 525 ст-2"
+            FontSize="25"
+            FontWeight="Bold"
+            Foreground="Cyan"></TextBlock>
+    </Grid>
+</Page>
